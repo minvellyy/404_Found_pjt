@@ -1,4 +1,6 @@
-
+```
+CREATE DATABASE dalba_seeding_db
+```
 
 주현 sql문
 ```
