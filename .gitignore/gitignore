@@ -1,7 +1,4 @@
 # .gitignore
 
 
-Moon/
-
-
-.streamlit/secrets.toml
+Moon/.streamlit/secrets.toml
