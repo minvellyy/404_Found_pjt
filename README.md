@@ -1,307 +1,150 @@
 ```
-CREATE DATABASE dalba_seeding_db
+프로젝트 개요
+프로젝트 기간: 2025-10-30 ~ 2025-11-06
+팀명: 404 Found
+참여 인원: 김민지, 문정환, 이유정, 이주현
+주제: [생성형 AI를 활용한 화장품 마케팅 통합 최적화 솔루션]
 ```
+![alt text](image/influencer_marketing_stats_2025.png)
 
-주현 sql문
+프로젝트 일정
+| 작업 항목 | 시작 날짜 | 종료 날짜 | 기간(일) |
+|------------|------------|------------|-----------|
+| 프로젝트 기획 및 문제 정의 | 2025-10-30 | 2025-10-31 | 2 |
+| 화장품 산업 리서치 및 인사이트 도출 | 2025-10-31 | 2025-10-31 | 1 |
+| Streamlit 대시보드 구현 | 2025-11-01 | 2025-11-05 | 4 |
+| 데이터 수집 및 DB 설계 | 2025-11-04 | 2025-11-05 | 2 |
+| Streamlit 코드 병합 | 2025-11-05 | 2025-11-05 | 1 |
+| 발표 자료 및 보고서 작성 | 2025-11-05 | 2025-11-06 | 2 |
+| 최종 점검 및 제출 | 2025-11-06 | 2025-11-06 | 1 |
+
+---------------
+# 프로젝트 주제 선정 과정
+시장조사
+전 세계 인플루언서 마케팅 시장은 2025년 약 325억 달러 도달할 전망이며, 매년 두 자릿수의 높은 성장률을 보임.
+
+![alt text](image/mkt_size.png)
+
+특히 K-뷰티 시장에서 가장 활발히 이루어지고 있음.
+마이크로,나노 인플루언서(팔로워 5천 ~10만 명)이 대형 인플루언서보다 더 높은 참여율과 ROI를 보여주고 있어 캠페인의 대상 범위도 넓어지고 있음.
+
+<p align="center">
+  <img src="image/most_popular_mkt.png" alt="alt text" width="300">
+</p>
+
+문제 정의
+기업들이 급성장하는 인플루언서 마케팅 시장에 막대한 비용을 투자하면서도 객관적 성과분석 체계가 부재하는 비효율성
+화장품 기업 마케터들은 방대한 양의 해외 트렌드 정보와 복잡한 제품 성분 데이터를 바탕으로 정보를 빠르게 직관적인 인사이트로 전환하여 마케팅 전략을 수립하는 데 어려움을 겪고 있음
+수립된 전략을 바탕으로 '최적의' 인플루언서를 선별하는 과정이 수작업으로 비효율적 운영
+
+
+목표 및 기대효과: 
+생성형 ai를 활용해 트렌드 분석부터 데이터 기반 인플루언서 시딩과 성과분석까지 원스톱 솔루션으로 기업의 투자 효율 극대화
+
+    
+마케터들의 업무 생산성 증진.
+
+---------
+
+
+프로젝트 아키텍쳐
+![alt text](image/process_archi.png)
+
+# 🚀 AI 기반 마케팅/인플루언서 통합 솔루션 
+> 이 프로젝트는 MySQL 데이터베이스와 GenAI(GPT-4o)를 통합하여, 데이터 수집부터 분석, 인플루언서 매칭, 성과 진단 및 계약서 생성까지 **마케팅 전반의 워크플로우를 자동화**하는 솔루션입니다.
+![001.jpg](pptx/001.jpg)
+# 프로젝트 수행방향
+## 1. 역할분담
+![009.jpg](pptx/009.jpg)
+## 2. 개발 일정
+![010.jpg](pptx/010.jpg)
+
+# 프로젝트 설계
+## 1. 프로젝트 구성도
+![404_Found-_1차-프로젝트_-012.jpg](pptx/404_Found-_1차-프로젝트_-012.jpg)
+## 2. 설계 프로그램 상세
+![013.jpg](pptx/013.jpg)
+![014.jpg](pptx/014.jpg)
+
+
+## ✨ 주요 기능 및 특징 (Core Features)
 ```
--- --------------------------------------------------
--- 1. 데이터베이스 선택
--- --------------------------------------------------
-USE dalba_seeding_db;
-
--- --------------------------------------------------
--- 2. (안전장치) 기존 테이블 삭제 (외래 키 제약조건 임시 해제)
--- --------------------------------------------------
-SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS campaign_posts;
-DROP TABLE IF EXISTS campaigns;
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS influencers;
-SET FOREIGN_KEY_CHECKS = 1;
-
--- --------------------------------------------------
--- 3. 테이블 생성 (influencers, products, campaigns)
--- --------------------------------------------------
-
--- 인플루언서 테이블
-CREATE TABLE influencers (
-    influencer_id   INT AUTO_INCREMENT PRIMARY KEY,
-    handle          VARCHAR(50)  NOT NULL UNIQUE,  -- @계정명
-    platform        VARCHAR(20)  NOT NULL,         -- Instagram 등
-    email           VARCHAR(100) NOT NULL UNIQUE,
-    follower_count  INT          NOT NULL,
-    avg_likes       INT          NOT NULL,
-    avg_comments    INT          NOT NULL,
-    niche           VARCHAR(50)  NOT NULL,         -- 뷰티, 패션 등
-    quality_grade   CHAR(1)      NOT NULL,         -- A/B/C 등급
-    join_date       DATE         NOT NULL
-);
-
-ALTER TABLE influencers
-    ADD COLUMN influencer_name   VARCHAR(100) NULL,
-    ADD COLUMN account_category  VARCHAR(50)  NULL,
-    ADD COLUMN account_keywords  VARCHAR(200) NULL;
-
--- 제품 테이블
-CREATE TABLE products (
-    product_id      INT AUTO_INCREMENT PRIMARY KEY,
-    brand_name      VARCHAR(100) NOT NULL,
-    product_name    VARCHAR(100) NOT NULL UNIQUE,
-    category        VARCHAR(50)  NOT NULL,   -- 토너, 에센스, 쿠션 등
-    price           INT          NOT NULL,
-    skin_type       VARCHAR(50)  NOT NULL,   -- 건성, 지성, 민감성 등
-    keyword_tag     VARCHAR(100) NOT NULL    -- 비타민C, 미백, 진정 등
-);
-
-ALTER TABLE products
-    ADD COLUMN text_keyword   VARCHAR(200) NULL,
-    ADD COLUMN visual_keyword VARCHAR(200) NULL,
-    ADD COLUMN effect_keyword VARCHAR(200) NULL;
-
--- 캠페인 테이블
-CREATE TABLE campaigns (
-    campaign_id     INT AUTO_INCREMENT PRIMARY KEY,
-    campaign_name   VARCHAR(100) NOT NULL UNIQUE,   -- 캠페인명
-    objective       VARCHAR(100) NOT NULL,          -- 목적 (인지도/전환/신제품런칭 등)
-    start_date      DATE         NOT NULL,
-    end_date        DATE         NOT NULL,
-    total_budget    INT          NOT NULL          -- 캠페인 총 예산
-);
-
--- --------------------------------------------------
--- 4. 테이블 생성 (campaign_posts) 및 외래 키 연결
--- --------------------------------------------------
-CREATE TABLE campaign_posts (
-    post_id                 INT NOT NULL AUTO_INCREMENT,
-    campaign_id             INT NOT NULL,
-    influencer_id           INT NOT NULL,
-    product_id              INT NOT NULL,
-    post_date               DATE NOT NULL,
-    post_url                VARCHAR(200) NOT NULL,
-    views                   INT NOT NULL,
-    likes                   INT NOT NULL,
-    comments                INT NOT NULL,
-    saves                   INT NOT NULL,
-    cost                    INT NOT NULL,
-    engagement_rate         DECIMAL(6,2) NULL,
-    save_share_ratio        DECIMAL(6,2) NULL,
-    true_engagement_score   DECIMAL(8,2) NULL,
-    comment_quality_score   DECIMAL(8,2) NULL,
-    ctr_proxy               DECIMAL(6,2) NULL,
-    PRIMARY KEY (post_id)
-)
-ENGINE=InnoDB
-DEFAULT CHARSET=utf8mb4;
-
-ALTER TABLE campaign_posts
-    ADD INDEX idx_cp_campaign (campaign_id),
-    ADD CONSTRAINT fk_cp_campaign
-        FOREIGN KEY (campaign_id) REFERENCES campaigns(campaign_id);
-
-ALTER TABLE campaign_posts
-    ADD INDEX idx_cp_influencer (influencer_id),
-    ADD CONSTRAINT fk_cp_influencer
-        FOREIGN KEY (influencer_id) REFERENCES influencers(influencer_id);
-
-ALTER TABLE campaign_posts
-    ADD INDEX idx_cp_product (product_id),
-    ADD CONSTRAINT fk_cp_product
-        FOREIGN KEY (product_id) REFERENCES products(product_id);
-
--- --------------------------------------------------
--- 5. 더미 데이터 생성 (총 4130개 레코드)
--- --------------------------------------------------
-
--- 인플루언서 1000명 생성
-SET @n := 0;
-INSERT INTO influencers (
-    influencer_name,
-    handle,
-    platform,
-    account_category,
-    account_keywords,
-    niche,
-    follower_count,
-    avg_likes,
-    avg_comments,
-    quality_grade,
-    email,
-    join_date
-)
-SELECT
-    CONCAT('인플루언서_', LPAD(n, 4, '0'))     AS influencer_name,
-    CONCAT('influencer_', LPAD(n, 4, '0'))     AS handle,
-    'Instagram'                                AS platform,
-    CASE 
-        WHEN n % 3 = 0 THEN '뷰티전문'
-        WHEN n % 3 = 1 THEN '뷰티·일상'
-        ELSE '패션·뷰티'
-    END                                        AS account_category,
-    CONCAT('키워드_', LPAD(n, 4, '0'), ',뷰티,스킨케어') AS account_keywords,
-    CONCAT('Beauty_Niche_', LPAD(n, 4, '0'))   AS niche,
-    1000 + n * 10                              AS follower_count,
-    100 + n * 2                                AS avg_likes,
-    20 + n                                     AS avg_comments,
-    CASE
-        WHEN n % 3 = 0 THEN 'A'
-        WHEN n % 3 = 1 THEN 'B'
-        ELSE 'C'
-    END                                        AS quality_grade,
-    CONCAT('influencer', n, '@example.com')    AS email,
-    DATE_ADD(DATE '2023-01-01', INTERVAL n DAY)  AS join_date
-FROM (
-    SELECT @n := @n + 1 AS n
-    FROM information_schema.tables
-    LIMIT 1000
-) AS seq;
-
--- 제품 100개 생성
-SET @n := 0;
-INSERT INTO products (
-    brand_name,
-    product_name,
-    category,
-    price,
-    skin_type,
-    text_keyword,
-    visual_keyword,
-    effect_keyword,
-    keyword_tag
-)
-SELECT
-    CONCAT('Brand_', LPAD(n, 3, '0'))           AS brand_name,
-    CONCAT('Product_', LPAD(n, 3, '0'))         AS product_name,
-    CASE 
-        WHEN n % 3 = 0 THEN 'Toner'
-        WHEN n % 3 = 1 THEN 'Essence'
-        ELSE 'Cushion'
-    END                                         AS category,
-    10000 + n * 500                             AS price,
-    CASE 
-        WHEN n % 3 = 0 THEN 'Dry'
-        WHEN n % 3 = 1 THEN 'Oily'
-        ELSE 'Sensitive'
-    END                                         AS skin_type,
-    CONCAT('text_kw_',   LPAD(n, 3, '0'))       AS text_keyword,
-    CONCAT('visual_kw_', LPAD(n, 3, '0'))       AS visual_keyword,
-    CONCAT('effect_kw_', LPAD(n, 3, '0'))       AS effect_keyword,
-    CONCAT('kw_',        LPAD(n, 3, '0'))       AS keyword_tag
-FROM (
-    SELECT @n := @n + 1 AS n
-    FROM information_schema.tables
-    LIMIT 100
-) AS seq;
-
--- 캠페인 30개 생성
-SET @n := 0;
-INSERT INTO campaigns (
-    campaign_name,
-    objective,
-    start_date,
-    end_date,
-    total_budget
-)
-SELECT
-    CONCAT('Campaign_', LPAD(n, 2, '0'))      AS campaign_name,
-    CASE 
-        WHEN n % 3 = 0 THEN 'Awareness'
-        WHEN n % 3 = 1 THEN 'Conversion'
-        ELSE 'Launch'
-    END                                         AS objective,
-    DATE_ADD('2024-01-01', INTERVAL (n - 1) * 10 DAY)     AS start_date,
-    DATE_ADD('2024-01-01', INTERVAL (n - 1) * 10 + 7 DAY) AS end_date,
-    1000000 + n * 50000                         AS total_budget
-FROM (
-    SELECT @n := @n + 1 AS n
-    FROM information_schema.tables
-    LIMIT 30
-) AS seq;
-
--- 포스팅(활동) 데이터 3000개 생성
-SET @n := 0;
-INSERT INTO campaign_posts (
-    campaign_id,
-    influencer_id,
-    product_id,
-    post_date,
-    post_url,
-    views,
-    likes,
-    comments,
-    saves,
-    cost
-)
-SELECT
-    ((n - 1) % 30) + 1                AS campaign_id,    -- 1~30 캠페인 순환
-    ((n - 1) % 1000) + 1              AS influencer_id,  -- 1~1000 인플루언서 순환
-    ((n - 1) % 100) + 1               AS product_id,     -- 1~100 제품 순환
-    DATE_ADD('2024-02-01', INTERVAL n DAY) AS post_date,
-    CONCAT('https://instagram.com/post/', n) AS post_url,
-    1000 + n * 5                      AS views,
-    100 + (n % 300)                   AS likes,
-    10 + (n % 50)                     AS comments,
-    5 + (n % 30)                      AS saves,
-    50000 + (n % 40) * 1000           AS cost
-FROM (
-    SELECT @n := @n + 1 AS n
-    FROM information_schema.tables
-    LIMIT 3000
-) AS seq;
-
--- --------------------------------------------------
--- 6. 데이터 생성 확인
--- --------------------------------------------------
-SELECT 'influencers' AS table_name, COUNT(*) AS cnt FROM influencers
-UNION ALL
-SELECT 'products', COUNT(*) FROM products
-UNION ALL
-SELECT 'campaigns', COUNT(*) FROM campaigns
-UNION ALL
-SELECT 'campaign_posts', COUNT(*) FROM campaign_posts;
+* **MySQL 기반 데이터 통합:** 모든 인플루언서/제품/캠페인 성과 데이터를 MySQL에 통합 관리합니다.
+* **GenAI 대화형 매칭:** 마케팅 목표를 자연어로 입력하면, AI가 자동으로 필터를 추출하고 가중치 기반으로 최적의 인플루언서를 추천합니다.
+* **크로스 플랫폼 분석:** YouTube, Reddit 등 외부 소셜 미디어 데이터를 수집하고 분석하여 시장 인사이트를 제공합니다.
+* **자동화된 보고서/계약:** AI가 브랜드 적합도, 심층 인사이트 리포트 및 국문 계약서 초안을 자동 생성합니다.
 ```
+## 🛠 기술 스택 (Tech Stack)
 
-민지 sql
-```
-USE dalba_seeding_db;
+| 구분 | 주요 기술 | 용도 |
+| :---: | :--- | :--- |
+| **백엔드/로직** | Python, Pandas, NumPy | 데이터 처리, 비즈니스 로직 구현 |
+| **데이터베이스** | **MySQL (Streamlit Connection)** | 인플루언서 및 제품 데이터 영구 저장 |
+| **프론트엔드** | **Streamlit** | 대시보드 형태의 웹 애플리케이션 구축 |
+| **AI/API** | **OpenAI API (GPT-4o)** | 대화 분석, 키워드 추출, 심층 분석, 보고서/계약서 생성 |
+| **외부 연동** | **Google API Client, PRAW** | YouTube 및 Reddit 데이터 수집 |
+| **시각화/리포트**| Altair, Matplotlib, FPDF | 데이터 시각화 및 PDF 보고서 생성 |
 
-CREATE TABLE products (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  category VARCHAR(100),
-  description TEXT,
-  ingredients TEXT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+## 📦 모듈별 상세 기능 요약
 
-INSERT INTO products (name, category, description, ingredients) VALUES
-('Hydra Calm Cream', 'Skincare', 'Light moisturizing cream for daily use with non-greasy finish.', 'Aqua; Glycerin; Hyaluronic Acid; Centella Asiatica; Panthenol'),
-('Fresh Citrus Toner', 'Skincare', 'Refreshing vitamin C toner that gently exfoliates and brightens.', 'Water; Ascorbic Acid; Niacinamide; Citrus Extract; Allantoin'),
-('Deep Moist Serum', 'Skincare', 'Intense hydration serum that plumps and smooths fine lines.', 'Hyaluronic Acid (3 weights); Betaine; Panthenol; Trehalose'),
-('Matte Balance Lotion', 'Skincare', 'Oil-control lotion designed for oily/combination skin types.', 'Niacinamide; Zinc PCA; Silica; Green Tea; Allantoin'),
-('Herbal Repair Cream', 'Skincare', 'Restorative cream for stressed skin featuring herbal extracts.', 'Centella; Madecassoside; Mugwort; Shea Butter; Ceramide NP'),
-('Rose Glow Mist', 'Skincare', 'Dewy face mist for an instant glow and hydration boost.', 'Rosa Damascena Water; Aloe; Beta-Glucan; Glycerin'),
-('Ocean Energy Gel', 'Skincare', 'Cooling gel moisturizer with marine minerals for fatigued skin.', 'Sea Water; Algae Extract; Menthol; Panthenol'),
-('Lavender Night Mask', 'Skincare', 'Overnight sleeping mask to soothe and nourish skin.', 'Lavender Oil; Squalane; Ceramide; Sodium PCA'),
-('Green Tea Cleanser', 'Skincare', 'Daily gel cleanser that removes impurities without stripping.', 'Green Tea Extract; Cocamidopropyl Betaine; Glycerin'),
-('Vanilla Shea Body Butter', 'Bodycare', 'Rich body butter for very dry skin with long-lasting moisture.', 'Shea Butter; Cocoa Butter; Jojoba Oil; Vanilla'),
-('Cica Soothing Ampoule', 'Skincare', 'Fast-calming ampoule for redness and sensitivity.', 'Centella Complex; Madecassoside; Panthenol; Beta-Glucan'),
-('Aqua Shield Sunscreen SPF50+', 'Skincare', 'Lightweight, water-based sunscreen with broad spectrum protection.', 'Uvinul A Plus; Tinosorb S; Niacinamide; Vitamin E'),
-('Ceramide Barrier Cream', 'Skincare', 'Barrier-repair cream for compromised and dry skin.', 'Ceramide NP; Cholesterol; Free Fatty Acids; Squalane'),
-('Pore Clear Clay Mask', 'Skincare', 'Weekly clay mask to absorb sebum and refine pores.', 'Kaolin; Bentonite; Charcoal; Tea Tree'),
-('Brightening Spot Serum', 'Skincare', 'Dark spot corrector targeting uneven tone.', 'Tranexamic Acid; Arbutin; Licorice; Niacinamide'),
-('Cooling Aloe Gel', 'Bodycare', 'Multi-purpose aloe gel for face and body.', 'Aloe Vera; Allantoin; Panthenol'),
-('Silky Hand Cream', 'Bodycare', 'Non-sticky hand cream with quick absorption.', 'Shea Butter; Sweet Almond Oil; Vitamin E'),
-('Coconut Hair Mask', 'Haircare', 'Deep conditioning mask for damaged hair.', 'Coconut Oil; Hydrolyzed Keratin; Argan Oil'),
-('Mint Scalp Tonic', 'Haircare', 'Refreshing scalp tonic for oil control.', 'Menthol; Salicylic Acid; Niacinamide'),
-('Volumizing Dry Shampoo', 'Haircare', 'Instant refresh and volume between washes.', 'Rice Starch; Silica; Fragrance'),
-('Soft Cotton EDT', 'Fragrance', 'Clean and soft fragrance with cotton musk.', 'Ethanol; Perfume; Musk Accord'),
-('Citrus Wood EDT', 'Fragrance', 'Bright citrus opening with a woody base.', 'Ethanol; Perfume; Citrus Accord; Cedarwood'),
-('Blooming Rose Mist', 'Skincare', 'Fine rose mist to refresh makeup and skin.', 'Rose Water; Glycerin; Betaine'),
-('Tea Tree Blemish Toner', 'Skincare', 'Clarifying toner for breakout-prone skin.', 'Tea Tree; Salicylic Acid; Zinc PCA'),
-('Hyaluron Bounce Cream', 'Skincare', 'Bouncy gel-cream with multi-weight hyaluron.', 'Hyaluronic Acid; Panthenol; Squalane'),
-('Chamomile Calming Cream', 'Skincare', 'Comfort cream to reduce irritation and heat.', 'Chamomile; Bisabolol; Allantoin'),
-('Berry Peeling Pads', 'Skincare', 'Pre-soaked pads for gentle daily exfoliation.', 'Lactic Acid; PHA; Berry Extract'),
-('Vitamin Eye Bright Cream', 'Skincare', 'Eye cream for dark circles and dullness.', 'Niacinamide; Vitamin C; Caffeine'),
-('Sheer Lip Balm', 'Makeup', 'Hydrating tinted balm with natural finish.', 'Beeswax; Shea Butter; Jojoba Oil'),
-('Moist Cushion Foundation', 'Makeup', 'Dewy cushion with skincare benefits.', 'Hyaluronic Acid; Niacinamide; SPF Filters'),
-('Matte Fixing Powder', 'Makeup', 'Translucent powder to set makeup and control shine.', 'Silica; Mica; Dimethicone');
+프로젝트는 5가지 주요 기능별 모듈로 구성되어 있으며, 각 모듈은 독립적인 기능을 수행합니다.
+
+| 코드 번호 | 모듈 이름 | 핵심 기능 요약 | AI/분석 역할 |
+| :---: | :--- | :--- | :--- |
+| **1** | **제품 타겟 AI 분석** | DB 제품 정보 기반, **타겟 고객 상세 분석** 및 **유사 제품 추천 리포트** 자동 생성 (Excel/PDF) | GPT-4o로 타겟팅 정보(국가, 연령, 피부타입 등)를 구조화된 JSON으로 추출. |
+| **2** | **Reddit 트렌드 분석** | PRAW를 이용한 Reddit 데이터 수집 및 캐싱. 키워드, 감성, 시간 트렌드 분석. | GPT-4o가 분석 결과를 조합하여 **국문/영문 임원진 보고서**를 생성. |
+| **3** | **YouTube 트렌드 분석** | YouTube API로 영상 및 댓글 수집. 댓글 **동시출현/토픽 비교** 분석 및 **진정성 지표** 활용. | GPT-4o가 댓글 감성 및 통계 기반으로 **전략적 인사이트 보고서** 생성. |
+| **4** | **AI 매칭 & 계약 관리** | **DB 연동**, **대화형 필터링**, **가중치 기반 랭킹** 모델 구현. 최종 후보에 대한 AI **브랜드 핏 평가** 및 **계약서 초안** 자동 생성. | GPT-4o가 자연어를 필터로 변환하고, 브랜드/인플루언서 적합도 심층 분석. |
+| **5** | **성과 분석 대시보드** | 과거 캠페인 성과(KPI)를 로드/집계하여 **진정성 지수** 산출. **KPI 가중치 조정** 기능과 **AI KPI 요약 보고서** 생성. | GPT-4o가 전체 KPI 데이터 기반으로 **마케팅 효율성 진단 보고서**를 작성. |
+
+
+# 설치 및 실행
+
+## 1. 환경 구성
+pip install streamlit pandas numpy openai fpdf altair google-api-python-client praw pymysql SQLAlchemy
+
+## 2. 애플리케이션 실행
+streamlit run app.py 
+
+
+
+## 🧠 LLM (GPT-4o) 역할별 시스템 프롬프트 요약
+
+이 프로젝트에서 각 모듈의 AI 모델에게 부여된 **전문가 역할** 및 **핵심 지시사항**입니다.
+
+| 코드 | 모듈 역할 | AI 역할 (System Prompt Key) | 핵심 지시사항 |
+|:---:|:---:|:---|---|
+| **1** | 제품 타겟 분석 | **화장품 시장 분석 전문가** | 제품 정보를 분석하여 **JSON 스키마**에 맞춰 타겟 고객(국가, 연령, 피부 타입 등)을 상세 분석. |
+| **2** | Reddit 보고서 | **Senior Executive Market Analyst** | 분석 데이터를 기반으로 **국문/영문**의 실행 가능한 **이중 언어 임원진 보고서**를 생성. |
+| **3** | YouTube 보고서 | **Senior Executive Market Analyst specializing in YouTube Trends** | 댓글 성과 데이터를 분석하여 **국문/영문**의 **전략적 통찰력**을 담은 보고서를 생성. |
+| **4** | AI 매칭/계약 | **Marketing Campaign Assistant** | 자연어 요청을 분석하여 필터 값 추출 후, **누락 정보에 대한 후속 질문**을 JSON 형태로 생성. |
+| **5** | 성과 분석/KPI | **시니어 마케팅 AI 어시스턴트** / **CMO 보고 데이터 사이언티스트** | 마케팅 요청을 **텍스트 키워드/시각 태그** JSON으로 추출하며, KPI 기반 **마케팅 효율성 진단 보고서**를 작성. |
+
+## ⚙️ 실행 환경 설정 (Getting Started)
+
+### 1. 필수 환경 설정
+
+프로젝트 실행을 위해서는 다음 API 키 및 DB 정보가 필요합니다. 모두 `.streamlit/secrets.toml` 파일에 설정해야 합니다.
+
+```toml
+OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE"
+
+[connections.mysql_db]
+# Streamlit DB Connection 설정
+dialect = "mysql"
+host = "your_mysql_host"
+port = 3306
+database = "your_database_name"
+username = "your_username"
+password = "your_password"
+
+[youtube]
+YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY_HERE"
+
+[reddit]
+client_id = "YOUR_REDDIT_CLIENT_ID"
+client_secret = "YOUR_REDDIT_CLIENT_SECRET"
+user_agent = "RedditAnalyzer_Streamlit" 
+# username/password는 선택 사항입니다.
+
 ```
